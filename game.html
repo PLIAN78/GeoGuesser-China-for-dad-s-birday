@@ -237,8 +237,13 @@
       </div>
     </div>
   </div>
+<script src="config.js"></script>
+<script src="https://map.qq.com/api/js?v=2.exp&key=" id="mapScript"></script>
 
-  <script src="https://map.qq.com/api/js?v=2.exp&key=你的KEY"></script>
+<script>
+  document.getElementById("mapScript").src =
+    `https://map.qq.com/api/js?v=2.exp&key=${window.CONFIG.TENCENT_MAP_KEY}`;
+</script>
   <script>
     const TOTAL_ROUNDS = 5;
 
