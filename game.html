@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>中国地理猜测游戏（测试版）</title>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #1a1a1a;
+      border-bottom: 1px solid #2a2a2a;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 14px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      background: #2d7ef7;
+      color: white;
+      font-weight: 600;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .secondary {
+      background: #333;
+    }
+
+    .danger {
+      background: #d64545;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      height: calc(100vh - 62px);
+    }
+
+    .main-panel {
+      position: relative;
+      background: #000;
+      overflow: hidden;
+    }
+
+    #pano {
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      background: #181818;
+      border-left: 1px solid #2a2a2a;
+      min-width: 0;
+    }
+
+    .card {
+      padding: 14px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .card h3 {
+      margin: 0 0 10px 0;
+      font-size: 15px;
+    }
+
+    .card p {
+      margin: 6px 0;
+      font-size: 14px;
+      color: #ddd;
+      line-height: 1.45;
+    }
+
+    #guessMap {
+      width: 100%;
+      height: 320px;
+      background: #222;
+    }
+
+    .status {
+      font-size: 14px;
+      color: #ddd;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    .big {
+      font-size: 22px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .result-good {
+      color: #6ee56e;
+    }
+
+    .result-mid {
+      color: #ffd166;
+    }
+
+    .result-bad {
+      color: #ff6b6b;
+    }
+
+    .footer-note {
+      font-size: 12px;
+      color: #aaa;
+      line-height: 1.5;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #2a2a2a;
+      font-size: 12px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 55vh auto;
+        height: auto;
+      }
+
+      .main-panel {
+        height: 55vh;
+      }
+
+      .sidebar {
+        border-left: none;
+        border-top: 1px solid #2a2a2a;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="title">中国地理猜测游戏（测试版）</div>
+
+    <div class="stats">
+      <div>回合： <strong id="roundLabel">0 / 5</strong></div>
+      <div>总分： <strong id="totalScoreLabel">0</strong></div>
+      <div>上一轮距离： <strong id="lastDistanceLabel">-</strong></div>
+    </div>
+
+    <div class="controls">
+      <button id="startBtn">开始游戏</button>
+      <button id="submitBtn" disabled>提交猜测</button>
+      <button id="nextBtn" disabled class="secondary">下一轮</button>
+      <button id="restartBtn" class="danger">重新开始</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="main-panel">
+      <div id="pano"></div>
+    </div>
+
+    <div class="sidebar">
+      <div class="card">
+        <h3>游戏状态</h3>
+        <div id="status" class="status">点击「开始游戏」开始。</div>
+      </div>
+
+      <div class="card">
+        <h3>猜测地图</h3>
+        <div id="guessMap"></div>
+      </div>
+
+      <div class="card">
+        <h3>当前结果</h3>
+        <div id="roundScoreLabel" class="big">0 分</div>
+        <p id="resultText">尚未开始游戏。</p>
+      </div>
+
+      <div class="card">
+        <h3>未来功能（可扩展）</h3>
+        <span class="pill">随机街景</span>
+        <span class="pill">倒计时</span>
+        <span class="pill">禁止移动模式</span>
+        <span class="pill">排行榜</span>
+        <span class="pill">省份模式</span>
+        <span class="pill">每日挑战</span>
+      </div>
+
+      <div class="card footer-note">
+        请使用本地服务器运行本文件（不要直接双击打开）。
+      </div>
+    </div>
+  </div>
+
+  <script src="https://map.qq.com/api/js?v=2.exp&key=你的KEY"></script>
+  <script>
+    const TOTAL_ROUNDS = 5;
+
+    const LOCATION_POOL = [
+      { name: "北京 - 天安门附近", lat: 39.9087, lng: 116.3975 },
+      { name: "上海 - 人民广场附近", lat: 31.2304, lng: 121.4737 },
+      { name: "广州 - 天河附近", lat: 23.1291, lng: 113.2644 },
+      { name: "深圳 - 福田附近", lat: 22.5431, lng: 114.0579 },
+      { name: "成都 - 锦江附近", lat: 30.5728, lng: 104.0668 },
+      { name: "杭州 - 西湖附近", lat: 30.2741, lng: 120.1551 },
+      { name: "武汉 - 江汉附近", lat: 30.5928, lng: 114.3055 },
+      { name: "南京 - 新街口附近", lat: 32.0603, lng: 118.7969 },
+      { name: "西安 - 钟楼附近", lat: 34.3416, lng: 108.9398 },
+      { name: "重庆 - 渝中附近", lat: 29.5630, lng: 106.5516 }
+    ];
+
+    let roundNumber = 0;
+    let totalScore = 0;
+    let currentLocation = null;
+    let currentPanoId = null;
+    let guessLatLng = null;
+    let guessMarker = null;
+    let actualMarker = null;
+    let linePolyline = null;
+    let pano = null;
+    let panoService = null;
+    let guessMap = null;
+    let usedIndices = [];
+
+    const roundLabel = document.getElementById("roundLabel");
+    const totalScoreLabel = document.getElementById("totalScoreLabel");
+    const lastDistanceLabel = document.getElementById("lastDistanceLabel");
+    const roundScoreLabel = document.getElementById("roundScoreLabel");
+    const resultText = document.getElementById("resultText");
+    const statusEl = document.getElementById("status");
+
+    const startBtn = document.getElementById("startBtn");
+    const submitBtn = document.getElementById("submitBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function updateTopStats() {
+      roundLabel.textContent = `${roundNumber} / ${TOTAL_ROUNDS}`;
+      totalScoreLabel.textContent = totalScore;
+    }
+
+    function toLatLng(lat, lng) {
+      return new qq.maps.LatLng(lat, lng);
+    }
+
+    function clearMapOverlays() {
+      if (guessMarker) {
+        guessMarker.setMap(null);
+        guessMarker = null;
+      }
+      if (actualMarker) {
+        actualMarker.setMap(null);
+        actualMarker = null;
+      }
+      if (linePolyline) {
+        linePolyline.setMap(null);
+        linePolyline = null;
+      }
+    }
+
+    function pickUnusedLocation() {
+      if (usedIndices.length >= LOCATION_POOL.length) {
+        usedIndices = [];
+      }
+
+      let index;
+      do {
+        index = Math.floor(Math.random() * LOCATION_POOL.length);
+      } while (usedIndices.includes(index));
+
+      usedIndices.push(index);
+      return LOCATION_POOL[index];
+    }
+
+    function haversineKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) *
+        Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    function scoreFromDistance(distanceKm) {
+      const score = Math.round(5000 * Math.exp(-distanceKm / 1200));
+      return Math.max(0, Math.min(5000, score));
+    }
+
+    function resultClass(score) {
+      if (score >= 4000) return "result-good";
+      if (score >= 2000) return "result-mid";
+      return "result-bad";
+    }
+
+    function setRoundResult(score, distanceKm, actualName) {
+      roundScoreLabel.textContent = `${score} 分`;
+      roundScoreLabel.className = `big ${resultClass(score)}`;
+      resultText.textContent =
+        `距离：${distanceKm.toFixed(1)} 公里\n实际位置：${actualName}`;
+      lastDistanceLabel.textContent = `${distanceKm.toFixed(1)} 公里`;
+    }
+
+    function resetRoundUI() {
+      guessLatLng = null;
+      currentPanoId = null;
+      clearMapOverlays();
+      roundScoreLabel.textContent = "0 分";
+      roundScoreLabel.className = "big";
+      resultText.textContent = "请在地图上选择位置并提交。";
+      lastDistanceLabel.textContent = "-";
+      submitBtn.disabled = true;
+      nextBtn.disabled = true;
+    }
+
+    function initMaps() {
+      pano = new qq.maps.Panorama(document.getElementById("pano"), {
+        visible: true
+      });
+
+      panoService = new qq.maps.PanoramaService();
+
+      guessMap = new qq.maps.Map(document.getElementById("guessMap"), {
+        center: toLatLng(35.8617, 104.1954),
+        zoom: 4
+      });
+
+      qq.maps.event.addListener(guessMap, "click", function(evt) {
+        placeGuess(evt.latLng);
+      });
+    }
+
+    function placeGuess(latLng) {
+      guessLatLng = latLng;
+
+      if (guessMarker) {
+        guessMarker.setMap(null);
+      }
+
+      guessMarker = new qq.maps.Marker({
+        position: latLng,
+        map: guessMap
+      });
+
+      submitBtn.disabled = false;
+      setStatus("已选择位置，请点击「提交猜测」。");
+    }
+
+    function tryLoadPanoForLocation(location, attempt = 0) {
+      const maxAttempts = 5;
+      const searchRadius = 1500;
+
+      const latLng = toLatLng(location.lat, location.lng);
+
+      setStatus(
+        `第 ${roundNumber} 回合：正在寻找 ${location.name} 附近的街景...`
+      );
+
+      panoService.getPano(latLng, searchRadius, function(result) {
+        console.log("getPano result:", result, "for", location);
+
+        if (result && result.svid) {
+          currentLocation = location;
+          currentPanoId = result.svid;
+
+          setTimeout(() => {
+            try {
+              pano.setVisible(true);
+              pano.setPano(result.svid);
+              setStatus(
+                `第 ${roundNumber} 回合：街景已加载，请观察并在地图上选择位置。`
+              );
+            } catch (error) {
+              console.error("Panorama render error:", error);
+              setStatus("已找到街景，但显示失败。\n你仍可继续测试游戏逻辑。");
+            }
+          }, 100);
+
+          return;
+        }
+
+        if (attempt < maxAttempts) {
+          const jitterLat = location.lat + (Math.random() - 0.5) * 0.03;
+          const jitterLng = location.lng + (Math.random() - 0.5) * 0.03;
+
+          tryLoadPanoForLocation(
+            {
+              name: location.name,
+              lat: jitterLat,
+              lng: jitterLng
+            },
+            attempt + 1
+          );
+        } else {
+          setStatus(
+            `未找到 ${location.name} 附近的街景，正在跳过...`
+          );
+          setTimeout(startRound, 600);
+        }
+      });
+    }
+
+    function startGame() {
+      roundNumber = 0;
+      totalScore = 0;
+      usedIndices = [];
+      updateTopStats();
+      resetRoundUI();
+      startBtn.disabled = true;
+      startRound();
+    }
+
+    function startRound() {
+      if (roundNumber >= TOTAL_ROUNDS) {
+        endGame();
+        return;
+      }
+
+      roundNumber += 1;
+      updateTopStats();
+      resetRoundUI();
+
+      const location = pickUnusedLocation();
+      tryLoadPanoForLocation(location);
+    }
+
+    function submitGuess() {
+      if (!guessLatLng || !currentLocation) return;
+
+      const actualLatLng = toLatLng(currentLocation.lat, currentLocation.lng);
+
+      const distanceKm = haversineKm(
+        guessLatLng.getLat(),
+        guessLatLng.getLng(),
+        currentLocation.lat,
+        currentLocation.lng
+      );
+
+      const score = scoreFromDistance(distanceKm);
+      totalScore += score;
+      updateTopStats();
+      setRoundResult(score, distanceKm, currentLocation.name);
+
+      if (actualMarker) actualMarker.setMap(null);
+      actualMarker = new qq.maps.Marker({
+        position: actualLatLng,
+        map: guessMap
+      });
+
+      if (linePolyline) linePolyline.setMap(null);
+      linePolyline = new qq.maps.Polyline({
+        path: [guessLatLng, actualLatLng],
+        map: guessMap
+      });
+
+      const bounds = new qq.maps.LatLngBounds();
+      bounds.extend(guessLatLng);
+      bounds.extend(actualLatLng);
+      guessMap.fitBounds(bounds);
+
+      submitBtn.disabled = true;
+      nextBtn.disabled = false;
+
+      setStatus(
+        `第 ${roundNumber} 回合结束\n本轮得分：${score}\n距离：${distanceKm.toFixed(1)} 公里`
+      );
+    }
+
+    function endGame() {
+      submitBtn.disabled = true;
+      nextBtn.disabled = true;
+      startBtn.disabled = false;
+
+      roundLabel.textContent = `${TOTAL_ROUNDS} / ${TOTAL_ROUNDS}`;
+      setStatus(
+        `游戏结束\n最终得分：${totalScore} / ${TOTAL_ROUNDS * 5000}\n点击「开始游戏」重新开始`
+      );
+      resultText.textContent = "游戏完成。";
+    }
+
+    function restartGame() {
+      roundNumber = 0;
+      totalScore = 0;
+      currentLocation = null;
+      currentPanoId = null;
+      usedIndices = [];
+      clearMapOverlays();
+      updateTopStats();
+      resetRoundUI();
+      startBtn.disabled = false;
+      setStatus("游戏已重置，点击「开始游戏」。");
+    }
+
+    startBtn.addEventListener("click", startGame);
+    submitBtn.addEventListener("click", submitGuess);
+    nextBtn.addEventListener("click", startRound);
+    restartBtn.addEventListener("click", restartGame);
+
+    initMaps();
+    updateTopStats();
+    setStatus("点击「开始游戏」开始。");
+  </script>
+</body>
+</html>
