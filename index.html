@@ -408,7 +408,7 @@
       const latLng = toLatLng(location.lat, location.lng);
 
       setStatus(
-        `第 ${roundNumber} 回合：正在寻找 ${location.name} 附近的街景...`
+        `第 ${roundNumber} 回合：正在寻找中。。。`
       );
 
       panoService.getPano(latLng, searchRadius, function(result) {
