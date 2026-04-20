@@ -800,7 +800,7 @@
 
           const city = pickRandomCity();
           const targetLatLng = createRandomNearbyLatLng(city);
-          logMessage(`正在第 ${state.round} 轮寻找街景… 当前尝试城市：${city.name}（第 ${attempts} 次）`);
+          logMessage(`正在第 ${state.round} 轮寻找街景… `);
 
           state.panoService.getPano(targetLatLng, CONFIG.defaultSearchRadius, async function(result) {
             if (!result || !result.svid) {
