@@ -96,11 +96,6 @@
       border: 1px solid #dbe2ea;
     }
 
-    .danger-btn {
-      background: #dc2626;
-      color: white;
-    }
-
     #content {
       flex: 1;
       display: grid;
@@ -370,7 +365,6 @@
       }
     }
   </style>
-  <script src="https://map.qq.com/api/js?v=2.exp&key=FIJBZ-5MV6B-RQCUQ-J6KCA-HER3E-MKFMI"></script>
 </head>
 <body>
   <div id="app">
@@ -457,6 +451,8 @@
   </div>
 
   <script>
+    const GOOGLE_MAPS_API_KEY = "AIzaSyC0AqtASKPsZUpRSv4mQ3-p8tGdv14ZYl8";
+
     const CONFIG = {
       totalRounds: 5,
       maxScorePerRound: 5000,
@@ -464,31 +460,25 @@
       maxSearchAttempts: 40,
       cityOffsetRange: 0.22,
       chinaCenter: { lat: 35.8617, lng: 104.1954 },
-      chinaZoom: 4,
+      chinaZoom: 4
     };
-
-    const CITY_POOL = [
-      { name: "北京", lat: 39.9042, lng: 116.4074 },
-      { name: "上海", lat: 31.2304, lng: 121.4737 },
-      { name: "广州", lat: 23.1291, lng: 113.2644 },
-      { name: "深圳", lat: 22.5431, lng: 114.0579 },
-      { name: "杭州", lat: 30.2741, lng: 120.1551 },
-      { name: "成都", lat: 30.5728, lng: 104.0668 },
-      { name: "武汉", lat: 30.5928, lng: 114.3055 },
-      { name: "南京", lat: 32.0603, lng: 118.7969 },
-      { name: "西安", lat: 34.3416, lng: 108.9398 },
-      { name: "重庆", lat: 29.5630, lng: 106.5516 },
-      { name: "苏州", lat: 31.2989, lng: 120.5853 },
-      { name: "天津", lat: 39.3434, lng: 117.3616 },
-      { name: "青岛", lat: 36.0671, lng: 120.3826 },
-      { name: "厦门", lat: 24.4798, lng: 118.0894 },
-      { name: "长沙", lat: 28.2282, lng: 112.9388 },
-      { name: "昆明", lat: 25.0389, lng: 102.7183 },
-      { name: "郑州", lat: 34.7466, lng: 113.6254 },
-      { name: "宁波", lat: 29.8683, lng: 121.5440 },
-      { name: "福州", lat: 26.0745, lng: 119.2965 },
-      { name: "合肥", lat: 31.8206, lng: 117.2272 }
-    ];
+const CITY_POOL = [
+  { name: "Taipei", lat: 25.0330, lng: 121.5654 },
+  { name: "New Taipei", lat: 25.0124, lng: 121.4657 },
+  { name: "Taoyuan", lat: 24.9936, lng: 121.3010 },
+  { name: "Hsinchu", lat: 24.8138, lng: 120.9675 },
+  { name: "Taichung", lat: 24.1477, lng: 120.6736 },
+  { name: "Changhua", lat: 24.0518, lng: 120.5161 },
+  { name: "Nantou", lat: 23.9609, lng: 120.9719 },
+  { name: "Yunlin", lat: 23.7092, lng: 120.4313 },
+  { name: "Chiayi", lat: 23.4801, lng: 120.4491 },
+  { name: "Tainan", lat: 22.9999, lng: 120.2270 },
+  { name: "Kaohsiung", lat: 22.6273, lng: 120.3014 },
+  { name: "Pingtung", lat: 22.5519, lng: 120.5488 },
+  { name: "Yilan", lat: 24.7021, lng: 121.7378 },
+  { name: "Hualien", lat: 23.9872, lng: 121.6015 },
+  { name: "Taitung", lat: 22.7583, lng: 121.1444 }
+];
 
     const state = {
       round: 1,
@@ -503,7 +493,7 @@
       currentRoundData: null,
       roundHistory: [],
       loadingRound: false,
-      roundSubmitted: false,
+      roundSubmitted: false
     };
 
     const els = {
@@ -526,7 +516,7 @@
       finalScreen: document.getElementById("final-screen"),
       finalSummaryText: document.getElementById("final-summary-text"),
       summaryList: document.getElementById("summary-list"),
-      playAgainBtn: document.getElementById("play-again-btn"),
+      playAgainBtn: document.getElementById("play-again-btn")
     };
 
     function logMessage(message) {
@@ -545,7 +535,7 @@
     }
 
     function formatCoords(latLng) {
-      return `${latLng.getLat().toFixed(4)}, ${latLng.getLng().toFixed(4)}`;
+      return `${latLng.lat().toFixed(4)}, ${latLng.lng().toFixed(4)}`;
     }
 
     function randomBetween(min, max) {
@@ -560,7 +550,7 @@
     function createRandomNearbyLatLng(city) {
       const lat = city.lat + randomBetween(-CONFIG.cityOffsetRange, CONFIG.cityOffsetRange);
       const lng = city.lng + randomBetween(-CONFIG.cityOffsetRange, CONFIG.cityOffsetRange);
-      return new qq.maps.LatLng(lat, lng);
+      return new google.maps.LatLng(lat, lng);
     }
 
     function clearRoundOverlays() {
@@ -584,7 +574,7 @@
 
     function resetMapView() {
       if (!state.map) return;
-      state.map.setCenter(new qq.maps.LatLng(CONFIG.chinaCenter.lat, CONFIG.chinaCenter.lng));
+      state.map.setCenter(CONFIG.chinaCenter);
       state.map.setZoom(CONFIG.chinaZoom);
     }
 
@@ -593,10 +583,10 @@
         state.guessMarker.setMap(null);
       }
 
-      state.guessMarker = new qq.maps.Marker({
+      state.guessMarker = new google.maps.Marker({
         position: latLng,
         map: state.map,
-        title: "你的猜测",
+        title: "你的猜测"
       });
 
       state.guessLatLng = latLng;
@@ -605,15 +595,15 @@
     }
 
     function setupGuessMap() {
-      state.map = new qq.maps.Map(document.getElementById("guess-map"), {
-        center: new qq.maps.LatLng(CONFIG.chinaCenter.lat, CONFIG.chinaCenter.lng),
+      state.map = new google.maps.Map(document.getElementById("guess-map"), {
+        center: CONFIG.chinaCenter,
         zoom: CONFIG.chinaZoom,
         mapTypeControl: false,
-        zoomControl: true,
-        scaleControl: true,
+        streetViewControl: false,
+        fullscreenControl: false
       });
 
-      qq.maps.event.addListener(state.map, "click", function(evt) {
+      state.map.addListener("click", function(evt) {
         if (state.loadingRound || state.roundSubmitted) return;
         placeGuessMarker(evt.latLng);
       });
@@ -621,10 +611,10 @@
 
     function haversineDistanceKm(a, b) {
       const R = 6371;
-      const lat1 = a.getLat() * Math.PI / 180;
-      const lat2 = b.getLat() * Math.PI / 180;
-      const dLat = (b.getLat() - a.getLat()) * Math.PI / 180;
-      const dLng = (b.getLng() - a.getLng()) * Math.PI / 180;
+      const lat1 = a.lat() * Math.PI / 180;
+      const lat2 = b.lat() * Math.PI / 180;
+      const dLat = (b.lat() - a.lat()) * Math.PI / 180;
+      const dLng = (b.lng() - a.lng()) * Math.PI / 180;
 
       const h = Math.sin(dLat / 2) ** 2 +
         Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
@@ -688,20 +678,22 @@
     }
 
     function showActualOnMap(actualLatLng) {
-      state.actualMarker = new qq.maps.Marker({
+      state.actualMarker = new google.maps.Marker({
         position: actualLatLng,
         map: state.map,
-        title: "真实地点",
+        title: "真实地点"
       });
 
-      state.line = new qq.maps.Polyline({
+      state.line = new google.maps.Polyline({
         path: [state.guessLatLng, actualLatLng],
+        geodesic: true,
         strokeColor: "#7c3aed",
+        strokeOpacity: 1.0,
         strokeWeight: 4,
-        map: state.map,
+        map: state.map
       });
 
-      const bounds = new qq.maps.LatLngBounds();
+      const bounds = new google.maps.LatLngBounds();
       bounds.extend(state.guessLatLng);
       bounds.extend(actualLatLng);
       state.map.fitBounds(bounds);
@@ -726,7 +718,7 @@
         score,
         distanceKm,
         guess: formatCoords(state.guessLatLng),
-        actual: formatCoords(actualLatLng),
+        actual: formatCoords(actualLatLng)
       };
       state.roundHistory.push(historyEntry);
 
@@ -746,82 +738,53 @@
       loadRound();
     }
 
-    function loadPanoramaBySvid(svid) {
-      return new Promise((resolve, reject) => {
-        let finished = false;
-
-        const timer = setTimeout(() => {
-          if (finished) return;
-          finished = true;
-          reject(new Error("街景加载超时"));
-        }, 12000);
-
-        const onChanged = qq.maps.event.addListener(state.panorama, "pano_changed", function() {
-          if (finished) return;
-          finished = true;
-          clearTimeout(timer);
-          qq.maps.event.removeListener(onChanged);
-          qq.maps.event.removeListener(onError);
-          resolve();
-        });
-
-        const onError = qq.maps.event.addListener(state.panorama, "error", function() {
-          if (finished) return;
-          finished = true;
-          clearTimeout(timer);
-          qq.maps.event.removeListener(onChanged);
-          qq.maps.event.removeListener(onError);
-          reject(new Error("街景渲染失败"));
-        });
-
-        try {
-          state.panorama.setPano(svid);
-        } catch (error) {
-          if (finished) return;
-          finished = true;
-          clearTimeout(timer);
-          qq.maps.event.removeListener(onChanged);
-          qq.maps.event.removeListener(onError);
-          reject(error);
-        }
-      });
-    }
-
     function findAvailablePanorama() {
       return new Promise((resolve, reject) => {
+        if (!state.panoService) {
+          reject(new Error("Street View 服务未初始化成功"));
+          return;
+        }
+
         let attempts = 0;
 
         function tryOnce() {
           attempts += 1;
+
           if (attempts > CONFIG.maxSearchAttempts) {
-            reject(new Error("暂时找不到可用街景，请刷新页面再试"));
+            reject(new Error("Google 街景暂时找不到可用地点。中国地区覆盖有限，请刷新重试。"));
             return;
           }
 
           const city = pickRandomCity();
           const targetLatLng = createRandomNearbyLatLng(city);
-          logMessage(`正在第 ${state.round} 轮寻找街景… `);
+          logMessage(`正在第 ${state.round} 轮寻找街景…（第 ${attempts} 次尝试）`);
 
-          state.panoService.getPano(targetLatLng, CONFIG.defaultSearchRadius, async function(result) {
-            if (!result || !result.svid) {
-              tryOnce();
-              return;
-            }
+          state.panoService.getPanorama(
+            {
+              location: targetLatLng,
+              radius: CONFIG.defaultSearchRadius
+            },
+            function(data, status) {
+              if (status !== google.maps.StreetViewStatus.OK || !data || !data.location) {
+                tryOnce();
+                return;
+              }
 
-            const actualLatLng = new qq.maps.LatLng(result.latlng.lat, result.latlng.lng);
+              const panoId = data.location.pano;
+              const actualLatLng = data.location.latLng;
 
-            try {
-              await loadPanoramaBySvid(result.svid);
+              state.panorama.setPano(panoId);
+              state.panorama.setPov({ heading: 0, pitch: 0 });
+              state.panorama.setZoom(1);
+              state.panorama.setVisible(true);
+
               resolve({
                 city,
-                svid: result.svid,
-                latLng: actualLatLng,
+                panoId,
+                latLng: actualLatLng
               });
-            } catch (error) {
-              console.warn("Found pano but failed to render, retrying:", error);
-              tryOnce();
             }
-          });
+          );
         }
 
         tryOnce();
@@ -850,17 +813,29 @@
     }
 
     async function initGame() {
-      if (!window.qq || !qq.maps) {
-        logMessage("腾讯地图 JS API 加载失败。请检查 key 是否正确，并确认在中国网络环境下使用。");
+      if (!window.google || !google.maps) {
+        logMessage("Google Maps JS API 加载失败，请检查 API Key、域名限制和 API 是否已启用。");
         return;
       }
 
       try {
-        state.panorama = new qq.maps.Panorama(document.getElementById("pano"));
-        state.panoService = new qq.maps.PanoramaService();
+        state.panorama = new google.maps.StreetViewPanorama(
+          document.getElementById("pano"),
+          {
+            pov: { heading: 0, pitch: 0 },
+            zoom: 1,
+            addressControl: false,
+            fullscreenControl: false,
+            motionTracking: false
+          }
+        );
+
+        state.panoService = new google.maps.StreetViewService();
+
         setupGuessMap();
         updateHeader();
         setButtonsState();
+
         await loadRound();
       } catch (error) {
         console.error(error);
@@ -879,6 +854,7 @@
     }
 
     els.submitBtn.addEventListener("click", submitGuess);
+
     els.clearGuessBtn.addEventListener("click", function() {
       if (state.roundSubmitted || state.loadingRound) return;
       if (state.guessMarker) {
@@ -889,6 +865,7 @@
       els.guessStatus.textContent = "还没有选择位置";
       setButtonsState();
     });
+
     els.nextRoundBtn.addEventListener("click", nextRound);
     els.restartBtn.addEventListener("click", restartGame);
     els.playAgainBtn.addEventListener("click", restartGame);
@@ -898,7 +875,42 @@
       logMessage(`页面错误：${message}`);
     };
 
-    window.onload = initGame;
+    function loadGoogleMapsScript() {
+      return new Promise((resolve, reject) => {
+        if (window.google && window.google.maps) {
+          resolve();
+          return;
+        }
+
+        const existing = document.getElementById("google-maps-script");
+        if (existing) {
+          existing.addEventListener("load", resolve);
+          existing.addEventListener("error", () => reject(new Error("Google Maps script failed to load")));
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.id = "google-maps-script";
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}`;
+        script.async = true;
+        script.defer = true;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("Google Maps script failed to load"));
+        document.head.appendChild(script);
+      });
+    }
+
+    async function bootstrap() {
+      try {
+        await loadGoogleMapsScript();
+        await initGame();
+      } catch (error) {
+        console.error(error);
+        logMessage(`启动失败：${error.message}`);
+      }
+    }
+
+    window.addEventListener("load", bootstrap);
   </script>
 </body>
 </html>
